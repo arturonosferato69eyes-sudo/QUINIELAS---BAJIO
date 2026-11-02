@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quinielas Bajío - Dominguera</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 10px; text-align: center; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { color: #333; margin-bottom: 5px; }
+        .match { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; background: #fafafa; padding: 8px; border-radius: 5px; border: 1px solid #ddd; }
+        .team { font-size: 14px; width: 35%; text-align: left; }
+        .team.right { text-align: right; }
+        .options { display: flex; gap: 5px; }
+        .btn-opt { width: 30px; height: 30px; font-weight: bold; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 4px; }
+        .btn-opt.active { background: #d9534f; color: white; border-color: #d9534f; }
+        .info { font-size: 14px; margin: 10px 0; font-weight: bold; }
+        .social-link { color: #3b5998; text-decoration: none; display: inline-block; margin-top: 5px; }
+        input[type="text"] { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        .actions { display: flex; gap: 5px; justify-content: center; margin-bottom: 10px; }
+        .btn-action { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-limpiar { background: #d9534f; }
+        .btn-enviar { background: #25d366; width: 100%; font-size: 16px; padding: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>QUINIELAS BAJÍO</h2>
+    <h3>DOMINGUERA</h3>
+    
+    <div id="matches-container"></div>
+
+    <div class="info">PRECIO: $10.00</div>
+    <div class="info">SÁBADO 11:50 P.M.</div>
+    
+    <!-- Tu número actualizado -->
+    <div class="info">INFORMES: +52 477 631 5296</div>
+    
+    <!-- Cambia este enlace por el de tu página o perfil de Facebook -->
+    <div class="info">
+        <a class="social-link" href="https://facebook.com/tu_pagina_o_perfil" target="_blank">📘 Quinielas Bajío en Facebook</a>
+    </div>
+
+    <div class="info" id="total-text">TOTAL: $0.00</div>
+
+    <input type="text" id="participante" placeholder="NOMBRE DEL PARTICIPANTE">
+
+    <div class="actions">
+        <button class="btn-action btn-limpiar" onclick="limpiarTodo()">Limpiar</button>
+        <button class="btn-action" style="background:#5bc0de;" onclick="aleatorio()">Aleatorio</button>
+    </div>
+
+    <button class="btn-action btn-enviar" onclick="enviarWhatsApp()">Enviar por 💬 WhatsApp</button>
+</div>
+
+<script>
+    // Puedes modificar los partidos aquí cada semana
+    const partidos = [
+        { local: "BOCA JUNIORS", visita: "RIVER PLATE" },
+        { local: "JUVENTUS", visita: "NAPOLI" },
+        { local: "NASHVILLE", visita: "NEW YORK RB" },
+        { local: "GREMIO", visita: "ATL. MINEIRO" },
+        { local: "SANTOS", visita: "NECAXA" },
+        { local: "CRUZ AZUL", visita: "LEON" },
+        { local: "LAFC", visita: "MINNESOTA" }
+    ];
+
+    const precioPorQuiniela = 10.00;
+    let selecciones = Array(partidos.length).fill(null);
+
+    function renderMatches() {
+        const container = document.getElementById('matches-container');
+        container.innerHTML = '';
+        partidos.forEach((p, index) => {
+            container.innerHTML += `
+                <div class="match">
+                    <span class="team">${p.local}</span>
+                    <div class="options">
+                        <button class="btn-opt ${selecciones[index] === 'L' ? 'active' : ''}" onclick="seleccionar(${index}, 'L')">L</button>
+                        <button class="btn-opt ${selecciones[index] === 'E' ? 'active' : ''}" onclick="seleccionar(${index}, 'E')">E</button>
+                        <button class="btn-opt ${selecciones[index] === 'V' ? 'active' : ''}" onclick="seleccionar(${index}, 'V')">V</button>
+                    </div>
+                    <span class="team right">${p.visita}</span>
+                </div>
+            `;
+        });
+        actualizarTotal();
+    }
+
+    function seleccionar(index, tipo) {
+        selecciones[index] = selecciones[index] === tipo ? null : tipo;
+        renderMatches();
+    }
+
+    function actualizarTotal() {
+        const llenas = selecciones.filter(s => s !== null).length;
+        const total = llenas > 0 ? precioPorQuiniela : 0;
+        document.getElementById('total-text').innerText = `TOTAL: $${total.toFixed(2)}`;
+    }
+
+    function limpiarTodo() {
+        selecciones = Array(partidos.length).fill(null);
+        document.getElementById('participante').value = '';
+        renderMatches();
+    }
+
+    function aleatorio() {
+        const opciones = ['L', 'E', 'V'];
+        selecciones = partidos.map(() => opciones[Math.floor(Math.random() * 3)]);
+        renderMatches();
+    }
+
+    function enviarWhatsApp() {
+        const nombre = document.getElementById('participante').value.trim();
+        if (!nombre) {
+            alert('Por favor ingresa tu nombre.');
+            return;
+        }
+        if (selecciones.includes(null)) {
+            alert('Por favor completa todos tus pronósticos.');
+            return;
+        }
+
+        let mensaje = `*QUINIELAS BAJÍO - DOMINGUERA*%0A`;
+        mensaje += `Participante: *${nombre}*%0A%0A`;
+        partidos.forEach((p, i) => {
+            mensaje += `${p.local} [${selecciones[i]}] ${p.visita}%0A`;
+        });
+        mensaje += `%0A¡Mucha suerte!`;
+
+        // Tu número con código de país (52) y el 1 para celular en México
+        const telefono = "5214776315296"; 
+        window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
+    }
+
+    renderMatches();
+</script>
+
+</body>
+</html>
